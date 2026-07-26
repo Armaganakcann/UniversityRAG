@@ -61,7 +61,7 @@ services:
       start_period: 5s
 
   minio:
-    image: minio/minio:RELEASE.2024-01-31T02-15-49Z
+    image: minio/minio:latest
     container_name: urag-minio-dev
     restart: unless-stopped
     entrypoint: >
@@ -88,7 +88,7 @@ services:
       start_period: 10s
 
   minio-init:
-    image: minio/mc:RELEASE.2024-01-28T16-11-37Z
+    image: minio/mc:latest
     container_name: urag-minio-init-dev
     restart: "no"
     networks:
