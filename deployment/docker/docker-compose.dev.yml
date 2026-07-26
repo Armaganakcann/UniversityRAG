@@ -1,0 +1,120 @@
+name: universityrag-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: urag-postgres-dev
+    restart: unless-stopped
+    env_file:
+      - '../../configs/.env.development'
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-universityrag_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - universityrag-dev-net
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ../../scripts/init-postgres.sql:/docker-entrypoint-initdb.d/01-init-postgres.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-universityrag_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  qdrant:
+    image: qdrant/qdrant:v1.8.0
+    container_name: urag-qdrant-dev
+    restart: unless-stopped
+    ports:
+      - "${QDRANT_PORT:-6333}:6333" # HTTP REST API
+      - "${QDRANT_GRPC_PORT:-6334}:6334" # gRPC API
+    networks:
+      - universityrag-dev-net
+    volumes:
+      - qdrant_dev_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6333/healthz || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: urag-redis-dev
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - universityrag-dev-net
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  minio:
+    image: minio/minio:RELEASE.2024-01-31T02-15-49Z
+    container_name: urag-minio-dev
+    restart: unless-stopped
+    entrypoint: >
+      /bin/sh -c "
+      minio server /data --console-address ':9001'
+      "
+    env_file:
+      - '../../configs/.env.development'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minio_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minio_dev_password}
+    ports:
+      - "9000:9000" # API
+      - "9001:9001" # Web Console
+    networks:
+      - universityrag-dev-net
+    volumes:
+      - minio_dev_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  minio-init:
+    image: minio/mc:RELEASE.2024-01-28T16-11-37Z
+    container_name: urag-minio-init-dev
+    restart: "no"
+    networks:
+      - universityrag-dev-net
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set localminio http://minio:9000 ${MINIO_ACCESS_KEY:-minio_admin} ${MINIO_SECRET_KEY:-minio_dev_password};
+      /usr/bin/mc mb --ignore-existing localminio/${MINIO_BUCKET_NAME:-regulations-dev};
+      /usr/bin/mc anonymous set download localminio/${MINIO_BUCKET_NAME:-regulations-dev};
+      exit 0;
+      "
+
+networks:
+  universityrag-dev-net:
+    name: universityrag-dev-net
+    driver: bridge
+
+volumes:
+  postgres_dev_data:
+    name: urag_postgres_dev_data
+  qdrant_dev_data:
+    name: urag_qdrant_dev_data
+  redis_dev_data:
+    name: urag_redis_dev_data
+  minio_dev_data:
+    name: urag_minio_dev_data
