@@ -1,0 +1,21 @@
+[project]
+name = "universityrag-backend"
+version = "0.1.0"
+description = "FastAPI Backend for UniversityRAG"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.28.0",
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.2.0",
+    "sqlalchemy[asyncio]>=2.0.28",
+    "asyncpg>=0.29.0",
+    "qdrant-client>=1.8.0",
+    "redis>=5.0.3",
+    "litellm>=1.30.0",
+    "structlog>=24.1.0"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

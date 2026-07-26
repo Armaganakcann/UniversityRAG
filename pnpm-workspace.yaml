@@ -1,0 +1,6 @@
+packages:
+  - "frontend"
+  - "shared/types"
+  - "sdk/typescript"
+allowBuilds:
+  '@biomejs/biome': false

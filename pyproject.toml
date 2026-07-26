@@ -1,0 +1,36 @@
+[project]
+name = "universityrag-monorepo"
+version = "0.1.0"
+description = "UniversityRAG Monorepo"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv.workspace]
+members = [
+    "backend",
+    "workers/*",
+    "shared/python/*",
+    "sdk/python"
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "B", "I", "N", "UP", "PL", "RUF"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["backend/tests"]
+python_files = ["test_*.py"]

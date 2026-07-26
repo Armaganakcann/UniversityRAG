@@ -1,0 +1,16 @@
+# Global Repo Owners
+* @UniversityRAG/core-maintainers
+
+# Backend & RAG Pipeline
+/backend/ @UniversityRAG/backend-team
+/workers/ @UniversityRAG/ai-team
+
+# Frontend Application
+/frontend/ @UniversityRAG/frontend-team
+
+# Infrastructure & CI/CD
+/deployment/ @UniversityRAG/devops-team
+/.github/workflows/ @UniversityRAG/devops-team
+
+# Documentation
+/docs/ @UniversityRAG/docs-team
